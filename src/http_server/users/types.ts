@@ -3,3 +3,5 @@ export type User = {
   index: number;
   password: string;
 };
+
+export type UserWithoutPassword = Omit<User, "password">;
