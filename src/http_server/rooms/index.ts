@@ -12,6 +12,10 @@ export class RoomService {
     return Object.keys(this.rooms).length.toString();
   }
 
+  getRoomById(id: string) {
+    return this.rooms[id];
+  }
+
   createRoom(user: UserWithoutPassword) {
     const roomId = this.getRoomCurrentKey();
     this.rooms[roomId] = {
@@ -22,6 +26,7 @@ export class RoomService {
 
   addUserToRoom(roomId: string, user: UserWithoutPassword) {
     this.rooms[roomId].roomUsers.push(user);
+    return this.rooms[roomId].roomUsers;
   }
 
   getAvailableRooms() {
