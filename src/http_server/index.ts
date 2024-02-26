@@ -7,6 +7,8 @@ import { User } from "./users/types";
 import { RoomService } from "./rooms";
 import { AddUserToRoomPayload } from "./rooms/types";
 import { GameService } from "./game";
+import { ShipService } from "./ships";
+import { ShipData } from "./ships/types";
 
 export const httpServer = http.createServer(function (req, res) {
   const __dirname = path.resolve(path.dirname(""));
@@ -27,6 +29,7 @@ const WS_PORT = 3000;
 const userService = new UserService();
 const roomService = new RoomService();
 const gameService = new GameService();
+const shipService = new ShipService();
 const wss = new WebSocketServer({ port: WS_PORT });
 
 const connections: Record<string, WebSocket> = {};
@@ -34,6 +37,8 @@ const connections: Record<string, WebSocket> = {};
 wss.on("connection", function connection(ws) {
   console.log(`Websocket connected on port ${WS_PORT}`);
   let currentUserName: string;
+  let currentGameId: string;
+  let indexPlayer: string;
 
   const handlers = {
     reg: (data: Omit<User, "index">) => {
@@ -49,6 +54,7 @@ wss.on("connection", function connection(ws) {
       roomService.createRoom(currentUser);
       const roomUpdate = roomService.getRoomUpdate();
       Object.values(connections).forEach((client) => client.send(roomUpdate));
+      indexPlayer = currentUserName;
     },
     add_user_to_room: (data: AddUserToRoomPayload) => {
       const currentUser = userService.getUserByName(currentUserName);
@@ -60,6 +66,16 @@ wss.on("connection", function connection(ws) {
       roomUsers.forEach((user, index) => {
         connections[user.name].send(responses[index]);
       });
+      currentGameId = responses[3];
+      indexPlayer = currentUserName;
+    },
+    add_ships: (data: ShipData) => {
+      const res = shipService.addShips({
+        ...data,
+        gameId: currentGameId,
+        indexPlayer,
+      });
+      connections[indexPlayer].send(res);
     },
   };
 

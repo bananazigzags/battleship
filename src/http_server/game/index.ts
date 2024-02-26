@@ -15,13 +15,14 @@ export class GameService {
     const gameId = this.getUserCurrentKey();
     this.games[gameId] = {
       gameId,
+      players,
     };
     const res1 = JSON.stringify({
       type: "create_game",
       data: JSON.stringify({
         data: {
           idGame: gameId,
-          idPlayer: `Player 1: ${players[0]}`,
+          idPlayer: players[0],
         },
         id: 0,
       }),
@@ -31,11 +32,21 @@ export class GameService {
       data: JSON.stringify({
         data: {
           idGame: gameId,
-          idPlayer: `Player 2: ${players[1]}`,
+          idPlayer: players[1],
         },
         id: 0,
       }),
     });
-    return [res1, res2];
+    return [res1, res2, gameId];
+  }
+
+  getGameIdByUser(userId: string) {
+    return Object.values(this.games).find((game) =>
+      game.players.includes(userId)
+    ).gameId;
+  }
+
+  getGameUsersById(gameId: string) {
+    return this.games[gameId].players;
   }
 }
